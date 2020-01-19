@@ -5,8 +5,8 @@ public interface ContentHandler {
     void endJSON() throws ParseException;
     
     boolean stringValue(char[] source, int begin, int end, int escapeCount) throws ParseException;
-    // TODO: split into double/int value
-    boolean numberValue(char[] source, int begin, int end, boolean fractional) throws ParseException;
+    boolean integerValue(char[] source, int begin, int end) throws ParseException;
+    boolean doubleValue(char[] source, int begin, int end) throws ParseException;
     boolean trueValue(char[] source, int begin, int end) throws ParseException;
     boolean falseValue(char[] source, int begin, int end) throws ParseException;
     boolean nullValue(char[] source, int begin, int end) throws ParseException;
@@ -29,11 +29,11 @@ public interface ContentHandler {
         }
     }
     
-    default Number readNumber(char[] source, int begin, int end, boolean fractional) {
-        if (fractional) {
-            return Double.valueOf(new String(source, begin, end - begin));
-        } else {
-            return Integer.valueOf(new String(source, begin, end - begin));
-        }
+    default int readInteger(char[] source, int begin, int end) {
+        return Integer.parseInt(new String(source, begin, end - begin));
+    }
+    
+    default double readDouble(char[] source, int begin, int end) {
+        return Double.parseDouble(new String(source, begin, end - begin));
     }
 }

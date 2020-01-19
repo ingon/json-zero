@@ -2,7 +2,7 @@ package org.json.zero;
 
 // TODO: verify length checks
 public class Parser {    
-    public void parse(char[] source, ContentHandler handler) throws ParseException {
+    public static void parse(char[] source, ContentHandler handler) throws ParseException {
         handler.beginJSON();
         int finalPosition = element(source, handler, 0);
         if (finalPosition < source.length) {
@@ -11,7 +11,7 @@ public class Parser {
         handler.endJSON();
     }
     
-    private int element(char[] source, ContentHandler handler, int begin) throws ParseException {
+    private static int element(char[] source, ContentHandler handler, int begin) throws ParseException {
         int end = whitespace(source, begin);
         
         end = value(source, handler, end);
@@ -19,7 +19,7 @@ public class Parser {
         return whitespace(source, end);
     }
     
-    private int value(char[] source, ContentHandler handler, int position) throws ParseException {
+    private static int value(char[] source, ContentHandler handler, int position) throws ParseException {
         if (position >= source.length) {
             return position;
         }
@@ -56,7 +56,7 @@ public class Parser {
         }
     }
     
-    private int objectValue(char[] source, ContentHandler handler, int begin) throws ParseException {
+    private static int objectValue(char[] source, ContentHandler handler, int begin) throws ParseException {
         handler.beginObject();
         int end = whitespace(source, begin + 1);
         if (end >= source.length) {
@@ -113,7 +113,7 @@ public class Parser {
         } while(true);
     }
     
-    private int arrayValue(char[] source, ContentHandler handler, int begin) throws ParseException {
+    private static int arrayValue(char[] source, ContentHandler handler, int begin) throws ParseException {
         handler.beginArray();
         int end = whitespace(source, begin + 1);
         if (end >= source.length) {
@@ -149,7 +149,7 @@ public class Parser {
         } while (true);
     }
     
-    private int stringValue(char[] source, ContentHandler handler, int begin, boolean value) throws ParseException {
+    private static int stringValue(char[] source, ContentHandler handler, int begin, boolean value) throws ParseException {
         int end = begin + 1;
         if (end >= source.length) {
             throw new ParseException(end, "reached end, expected '\"'");
@@ -203,7 +203,7 @@ public class Parser {
         return end + 1;
     }
     
-    private int nullValue(char[] source, ContentHandler handler, int begin) throws ParseException {
+    private static int nullValue(char[] source, ContentHandler handler, int begin) throws ParseException {
         int end = begin + 1;
         if (end >= source.length || source[end] != 'u')
             throw new ParseException(end, "expected u");
@@ -220,7 +220,7 @@ public class Parser {
         return end + 1;
     }
 
-    private int trueValue(char[] source, ContentHandler handler, int begin) throws ParseException {
+    private static int trueValue(char[] source, ContentHandler handler, int begin) throws ParseException {
         int end = begin + 1;
         if (end >= source.length || source[end] != 'r')
             throw new ParseException(end, "expected r");
@@ -237,7 +237,7 @@ public class Parser {
         return end + 1;
     }
 
-    private int falseValue(char[] source, ContentHandler handler, int begin) throws ParseException {
+    private static int falseValue(char[] source, ContentHandler handler, int begin) throws ParseException {
         int end = begin + 1;
         if (end >= source.length || source[end] != 'a')
             throw new ParseException(end, "expected a");
@@ -258,7 +258,7 @@ public class Parser {
         return end + 1;
     }
 
-    private int numberNegativeValue(char[] source, ContentHandler handler, int begin) throws ParseException {
+    private static int numberNegativeValue(char[] source, ContentHandler handler, int begin) throws ParseException {
         int end = begin + 1;
         if (end >= source.length) {
             throw new ParseException(begin, "reached end, expected number");
@@ -282,9 +282,9 @@ public class Parser {
         }
     }
     
-    private int numberValue(char[] source, ContentHandler handler, int begin, int position) throws ParseException {
+    private static int numberValue(char[] source, ContentHandler handler, int begin, int position) throws ParseException {
         if (position >= source.length) {
-            handler.numberValue(source, begin, position, false);
+            handler.integerValue(source, begin, position);
             return position;
         }
         
@@ -293,7 +293,7 @@ public class Parser {
             current++;
 
             if (current >= source.length) {
-                handler.numberValue(source, begin, current, false);
+                handler.integerValue(source, begin, current);
                 return current;
             }
         }
@@ -301,11 +301,11 @@ public class Parser {
         return numberRest(source, handler, begin, current);
     }
     
-    private int numberRest(char[] source, ContentHandler handler, int begin, int position) throws ParseException {
+    private static int numberRest(char[] source, ContentHandler handler, int begin, int position) throws ParseException {
         int current = position;
         if (current >= source.length) {
             final int end = current;
-            handler.numberValue(source, begin, current, false);
+            handler.integerValue(source, begin, current);
             return end;
         }
         
@@ -319,7 +319,7 @@ public class Parser {
             current++;
             if (current >= source.length) {
                 final int end = current;
-                handler.numberValue(source, begin, current, fractional);
+                handler.doubleValue(source, begin, current);
                 return end;
             }
             
@@ -329,7 +329,7 @@ public class Parser {
                 current++;
                 if (current >= source.length) {
                     final int end = current;
-                    handler.numberValue(source, begin, current, fractional);
+                    handler.doubleValue(source, begin, current);
                     return end;
                 }
             }
@@ -359,7 +359,7 @@ public class Parser {
                 hasDigits = true;
                 if (current >= source.length) {
                     final int end = current;
-                    handler.numberValue(source, begin, current, fractional);
+                    handler.doubleValue(source, begin, current);
                     return end;
                 }
             }
@@ -369,26 +369,30 @@ public class Parser {
         }
         
         final int end = current;
-        handler.numberValue(source, begin, current, fractional);
+        if (fractional) {
+            handler.doubleValue(source, begin, current);
+        } else {
+            handler.integerValue(source, begin, current);
+        }
         return end;
     }
     
-    private int whitespace(char[] source, int position) {
+    private static int whitespace(char[] source, int position) {
         if (position < source.length && isWhitespace(source[position])) {
             return position + 1;
         }
         return position;
     }
     
-    private boolean isHex(char ch) {
+    private static boolean isHex(char ch) {
         return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
     }
     
-    private boolean isDigit(char ch) {
+    private static boolean isDigit(char ch) {
         return ch >= '0' && ch <= '9';
     }
     
-    private boolean isWhitespace(char ch) {
-        return ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t';
+    private static boolean isWhitespace(char ch) {
+        return (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t');
     }
 }

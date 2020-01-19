@@ -15,7 +15,12 @@ public class DefaultContentHandler implements ContentHandler {
     }
 
     @Override
-    public boolean numberValue(char[] source, int begin, int end, boolean fractional) throws ParseException {
+    public boolean integerValue(char[] source, int begin, int end) throws ParseException {
+        return true;
+    }
+
+    @Override
+    public boolean doubleValue(char[] source, int begin, int end) throws ParseException {
         return true;
     }
 

@@ -51,12 +51,14 @@ public class ParserTest {
         }
 
         @Override
-        public boolean numberValue(char[] source, int begin, int end, boolean fractional) throws ParseException {
-            if (fractional) {
-                System.out.format("<D:%f>", readNumber(source, begin, end, fractional));
-            } else {
-                System.out.format("<I:%d>", readNumber(source, begin, end, fractional));
-            }
+        public boolean integerValue(char[] source, int begin, int end) throws ParseException {
+            System.out.format("<I:%d>", readInteger(source, begin, end));
+            return true;
+        }
+        
+        @Override
+        public boolean doubleValue(char[] source, int begin, int end) throws ParseException {
+            System.out.format("<D:%f>", readDouble(source, begin, end));
             return true;
         }
 
