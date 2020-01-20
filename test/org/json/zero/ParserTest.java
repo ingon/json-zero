@@ -52,8 +52,8 @@ public class ParserTest {
         }
 
         @Override
-        public boolean integerValue(char[] source, int begin, int end) throws ParseException {
-            System.out.format("<I:%d>", readInteger(source, begin, end));
+        public boolean longValue(char[] source, int begin, int end) throws ParseException {
+            System.out.format("<I:%d>", readLong(source, begin, end));
             return true;
         }
         

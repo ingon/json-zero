@@ -15,7 +15,7 @@ public class DefaultContentHandler implements ContentHandler {
     }
 
     @Override
-    public boolean integerValue(char[] source, int begin, int end) throws ParseException {
+    public boolean longValue(char[] source, int begin, int end) throws ParseException {
         return true;
     }
 

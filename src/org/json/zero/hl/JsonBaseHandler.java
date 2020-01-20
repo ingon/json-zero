@@ -34,7 +34,7 @@ public class JsonBaseHandler<T> implements ContentHandler {
     }
 
     @Override
-    public boolean integerValue(char[] source, int begin, int end) throws ParseException {
+    public boolean longValue(char[] source, int begin, int end) throws ParseException {
         throw new ParseException(-1, "unexpected integerValue call");
     }
 

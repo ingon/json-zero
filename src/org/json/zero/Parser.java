@@ -291,7 +291,7 @@ public class Parser {
     
     private static int numberValue(char[] source, ContentHandler handler, int begin, int position) throws ParseException {
         if (position >= source.length) {
-            handler.integerValue(source, begin, position);
+            handler.longValue(source, begin, position);
             return position;
         }
         
@@ -300,7 +300,7 @@ public class Parser {
             current++;
 
             if (current >= source.length) {
-                handler.integerValue(source, begin, current);
+                handler.longValue(source, begin, current);
                 return current;
             }
         }
@@ -312,7 +312,7 @@ public class Parser {
         int current = position;
         if (current >= source.length) {
             final int end = current;
-            handler.integerValue(source, begin, current);
+            handler.longValue(source, begin, current);
             return end;
         }
         
@@ -379,7 +379,7 @@ public class Parser {
         if (fractional) {
             handler.doubleValue(source, begin, current);
         } else {
-            handler.integerValue(source, begin, current);
+            handler.longValue(source, begin, current);
         }
         return end;
     }

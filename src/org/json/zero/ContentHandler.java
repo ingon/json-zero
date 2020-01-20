@@ -1,11 +1,13 @@
 package org.json.zero;
 
+import java.nio.CharBuffer;
+
 public interface ContentHandler {
     void beginJSON() throws ParseException;
     void endJSON() throws ParseException;
     
     boolean stringValue(char[] source, int begin, int end, int escapeCount) throws ParseException;
-    boolean integerValue(char[] source, int begin, int end) throws ParseException;
+    boolean longValue(char[] source, int begin, int end) throws ParseException;
     boolean doubleValue(char[] source, int begin, int end) throws ParseException;
     boolean trueValue(char[] source, int begin, int end) throws ParseException;
     boolean falseValue(char[] source, int begin, int end) throws ParseException;
@@ -53,7 +55,9 @@ public interface ContentHandler {
                         sb.append('\t');
                         break;
                     case 'u':
-                        throw new UnsupportedOperationException();
+                        int codePoint = Integer.parseInt(CharBuffer.wrap(source, i + 1, 4), 0, 4, 16);
+                        sb.append(Character.toChars(codePoint));
+                        i += 4;
                     }
                     break;
                 case '"':
@@ -66,8 +70,8 @@ public interface ContentHandler {
         }
     }
     
-    default int readInteger(char[] source, int begin, int end) {
-        return Integer.parseInt(new String(source, begin, end - begin));
+    default long readLong(char[] source, int begin, int end) {
+        return Long.parseLong(new String(source, begin, end - begin));
     }
     
     default double readDouble(char[] source, int begin, int end) {

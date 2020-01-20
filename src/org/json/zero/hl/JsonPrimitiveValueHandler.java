@@ -10,8 +10,8 @@ public class JsonPrimitiveValueHandler extends JsonBaseHandler<Object> {
     }
     
     @Override
-    public boolean integerValue(char[] source, int begin, int end) throws ParseException {
-        complete(readInteger(source, begin, end));
+    public boolean longValue(char[] source, int begin, int end) throws ParseException {
+        complete(readLong(source, begin, end));
         return true;
     }
     

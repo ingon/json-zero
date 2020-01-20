@@ -48,8 +48,8 @@ public class JsonParser<V> implements ContentHandler {
     }
     
     @Override
-    public boolean integerValue(char[] source, int begin, int end) throws ParseException {
-        return stack.peekLast().integerValue(source, begin, end);
+    public boolean longValue(char[] source, int begin, int end) throws ParseException {
+        return stack.peekLast().longValue(source, begin, end);
     }
     
     @Override
