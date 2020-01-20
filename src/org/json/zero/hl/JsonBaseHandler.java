@@ -20,81 +20,81 @@ public class JsonBaseHandler<T> implements ContentHandler {
 
     @Override
     public void beginJSON() throws ParseException {
-        throw new ParseException(-1, "unexpected beginJSON call");
+        throw new ParseException(-1, getClass() + ": unexpected beginJSON call");
     }
 
     @Override
     public void endJSON() throws ParseException {
-        throw new ParseException(-1, "unexpected endJSON call");
+        throw new ParseException(-1, getClass() + ": unexpected endJSON call");
     }
 
     @Override
     public boolean stringValue(char[] source, int begin, int end, int escapeCount) throws ParseException {
-        throw new ParseException(-1, "unexpected stringValue call");
+        throw new ParseException(-1, getClass() + ": unexpected stringValue call");
     }
 
     @Override
     public boolean longValue(char[] source, int begin, int end) throws ParseException {
-        throw new ParseException(-1, "unexpected integerValue call");
+        throw new ParseException(-1, getClass() + ": unexpected integerValue call");
     }
 
     @Override
     public boolean doubleValue(char[] source, int begin, int end) throws ParseException {
-        throw new ParseException(-1, "unexpected doubleValue call");
+        throw new ParseException(-1, getClass() + ": unexpected doubleValue call");
     }
 
     @Override
     public boolean trueValue(char[] source, int begin, int end) throws ParseException {
-        throw new ParseException(-1, "unexpected trueValue call");
+        throw new ParseException(-1, getClass() + ": unexpected trueValue call");
     }
 
     @Override
     public boolean falseValue(char[] source, int begin, int end) throws ParseException {
-        throw new ParseException(-1, "unexpected falseValue call");
+        throw new ParseException(-1, getClass() + ": unexpected falseValue call");
     }
 
     @Override
     public boolean nullValue(char[] source, int begin, int end) throws ParseException {
-        throw new ParseException(-1, "unexpected nullValue call");
+        throw new ParseException(-1, getClass() + ": unexpected nullValue call");
     }
 
     @Override
     public boolean beginObject() throws ParseException {
-        throw new ParseException(-1, "unexpected beginObject call (" + getClass() + ")");
+        throw new ParseException(-1, getClass() + ": unexpected beginObject call");
     }
 
     @Override
     public boolean beginObjectEntry(char[] source, int begin, int end, int escapeCount) throws ParseException {
-        throw new ParseException(-1, "unexpected beginObjectEntry call");
+        throw new ParseException(-1, getClass() + ": unexpected beginObjectEntry call");
     }
 
     @Override
     public boolean endObjectEntry() throws ParseException {
-        throw new ParseException(-1, "unexpected endObjectEntry call");
+        throw new ParseException(-1, getClass() + ": unexpected endObjectEntry call");
     }
 
     @Override
     public boolean endObject() throws ParseException {
-        throw new ParseException(-1, "unexpected endObject call");
+        throw new ParseException(-1, getClass() + ": unexpected endObject call");
     }
 
     @Override
     public boolean beginArray() throws ParseException {
-        throw new ParseException(-1, "unexpected beginArray call");
+        throw new ParseException(-1, getClass() + ": unexpected beginArray call");
     }
 
     @Override
     public boolean beginArrayEntry() throws ParseException {
-        throw new ParseException(-1, "unexpected beginArrayEntry call");
+        throw new ParseException(-1, getClass() + ": unexpected beginArrayEntry call");
     }
 
     @Override
     public boolean endArrayEntry() throws ParseException {
-        throw new ParseException(-1, "unexpected endArrayEntry call");
+        throw new ParseException(-1, getClass() + ": unexpected endArrayEntry call");
     }
 
     @Override
     public boolean endArray() throws ParseException {
-        throw new ParseException(-1, "unexpected endArray call");
+        throw new ParseException(-1, getClass() + ": unexpected endArray call");
     }
 }
