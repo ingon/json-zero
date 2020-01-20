@@ -60,7 +60,7 @@ public class JsonBaseHandler<T> implements ContentHandler {
 
     @Override
     public boolean beginObject() throws ParseException {
-        throw new ParseException(-1, "unexpected beginObject call");
+        throw new ParseException(-1, "unexpected beginObject call (" + getClass() + ")");
     }
 
     @Override

@@ -25,7 +25,44 @@ public interface ContentHandler {
         if (escapeCount == 0) {
             return String.valueOf(source, begin, end - begin);
         } else {
-            throw new UnsupportedOperationException();
+            StringBuilder sb = new StringBuilder(end - begin);
+            for (int i = begin; i < end; i++) {
+                char ch = source[i];
+                switch (ch) {
+                case '\\': 
+                    ch = source[++i];
+                    switch (ch) {
+                    case '"':
+                    case '\\':
+                    case '/':
+                        sb.append(ch);
+                        break;
+                    case 'b':
+                        sb.append('\b');
+                        break;
+                    case 'f':
+                        sb.append('\f');
+                        break;
+                    case 'n':
+                        sb.append('\n');
+                        break;
+                    case 'r':
+                        sb.append('\r');
+                        break;
+                    case 't':
+                        sb.append('\t');
+                        break;
+                    case 'u':
+                        throw new UnsupportedOperationException();
+                    }
+                    break;
+                case '"':
+                    throw new RuntimeException("wat");
+                default:
+                    sb.append(ch);
+                }
+            }
+            return sb.toString();
         }
     }
     

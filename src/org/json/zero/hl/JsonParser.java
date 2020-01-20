@@ -9,7 +9,7 @@ import org.json.zero.Parser;
 
 public class JsonParser<V> implements ContentHandler {
     public static <T> T parse(char[] data, JsonBaseHandler<T> handler) throws ParseException {
-        System.out.println("PARSE: " + String.valueOf(data));
+        System.out.println("PARSE: (" + String.valueOf(data) + ")");
         
         var parser = new JsonParser<T>(handler);
         Parser.parse(data, parser);

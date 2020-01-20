@@ -20,12 +20,13 @@ public class ParserTest {
 //        checkParse("10.2e+2");
 //        checkParse("10e-2");
 //        checkParse("0e+2");
-        printParse("{}");
-        printParse("{ }");
-        printParse("{\"a\": 2, \"b\" :\"abc\", \"c\": { \"d\": 100}}");
-        printParse("[]");
-        printParse("[ ]");
-        printParse("[ 1, 2, 3, [true, false, null], {\"a\": 1000.2e3}]");
+//        printParse("{}");
+//        printParse("{ }");
+//        printParse("{\"a\": 2, \"b\" :\"abc\", \"c\": { \"d\": 100}}");
+//        printParse("[]");
+//        printParse("[ ]");
+//        printParse("[ 1, 2, 3, [true, false, null], {\"a\": 1000.2e3}]");
+        printParse("{\"title\":\"A note to Trash\",\"ainfo\":\"Let’s create a note that we will throw in the trash but not expunge.\",\"ps\":0}");
     }
     
     private static void printParse(String s) throws ParseException {

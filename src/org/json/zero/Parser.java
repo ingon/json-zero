@@ -4,10 +4,16 @@ package org.json.zero;
 public class Parser {    
     public static void parse(char[] source, ContentHandler handler) throws ParseException {
         handler.beginJSON();
+        
         int finalPosition = element(source, handler, 0);
+        while (finalPosition < source.length && source[finalPosition] == '\0') {
+            finalPosition++;
+        }
+        
         if (finalPosition < source.length) {
             throw new ParseException(finalPosition, "unexpected content");
         }
+        
         handler.endJSON();
     }
     
@@ -58,6 +64,7 @@ public class Parser {
     
     private static int objectValue(char[] source, ContentHandler handler, int begin) throws ParseException {
         handler.beginObject();
+        
         int end = whitespace(source, begin + 1);
         if (end >= source.length) {
             throw new ParseException(end, "reached end, expected property or '}'");
@@ -378,12 +385,12 @@ public class Parser {
     }
     
     private static int whitespace(char[] source, int position) {
-        if (position < source.length && isWhitespace(source[position])) {
-            return position + 1;
+        while (position < source.length && isWhitespace(source[position])) {
+            position++;
         }
         return position;
     }
-    
+
     private static boolean isHex(char ch) {
         return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
     }
@@ -391,7 +398,7 @@ public class Parser {
     private static boolean isDigit(char ch) {
         return ch >= '0' && ch <= '9';
     }
-    
+
     private static boolean isWhitespace(char ch) {
         return (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t');
     }
