@@ -5,7 +5,8 @@ public class ParserTest {
 //        checkParse("");
 //        checkParse(" ");
 //        checkParse("\"\"");
-//        checkParse("\"abc\"");
+        printParse("\"abc\"");
+        printParse("\"\\u003a\\u003b\u003c\u003d\"");
 //        checkParse("\"\\t\"");
 //        checkParse("\"\\t\\b\"");
 //        checkParse("\"a\\u5da9b\"");
@@ -26,7 +27,13 @@ public class ParserTest {
 //        printParse("[]");
 //        printParse("[ ]");
 //        printParse("[ 1, 2, 3, [true, false, null], {\"a\": 1000.2e3}]");
-        printParse("{\"title\":\"A note to Trash\",\"ainfo\":\"Let’s create a note that we will throw in the trash but not expunge.\",\"ps\":0}");
+//        printParse("{\"title\":\"A note to Trash\",\"ainfo\":\"Let’s create a note that we will throw in the trash but not expunge.\",\"ps\":0}");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 10000; i++) {
+            sb.insert(0, '[');
+            sb.append(']');
+        }
+        printParse(sb.toString());
     }
     
     private static void printParse(String s) throws ParseException {

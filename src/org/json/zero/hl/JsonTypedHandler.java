@@ -35,6 +35,10 @@ public class JsonTypedHandler<T> extends JsonBaseHandler<T> {
         anyProperty(name, handler, consumer);
     }
     
+    public <S> void mapProperty(String name, JsonBaseHandler<S> handler, BiConsumer<T, Map<String, S>> consumer) {
+        anyProperty(name, new JsonMapHandler<S>(handler), consumer);
+    }
+    
     public <S> void arrayProperty(String name, JsonBaseHandler<S> handler, BiConsumer<T, List<S>> consumer) {
         anyProperty(name, new JsonArrayHandler<S>(handler), consumer);
     }
