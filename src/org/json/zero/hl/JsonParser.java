@@ -6,20 +6,13 @@ import java.util.LinkedList;
 import org.json.zero.ContentHandler;
 import org.json.zero.ParseException;
 import org.json.zero.Parser;
-import org.json.zero.ParserStoppable;
 
 public class JsonParser<V> implements ContentHandler {
     public static <T> T parse(char[] data, JsonBaseHandler<T> handler) throws ParseException {
         var parser = new JsonParser<T>(handler);
         Parser.parse(data, parser);
         return parser.getValue();
-    }
-
-    public static <T> T parseS(char[] data, JsonBaseHandler<T> handler) throws ParseException {
-        var parser = new JsonParser<T>(handler);
-        ParserStoppable.parse(data, parser);
-        return parser.getValue();
-    }
+    }    
 
     private final JsonBaseHandler<V> root;
     private final Deque<String> debug = new LinkedList<String>();

@@ -1,52 +1,57 @@
 package org.json.zero;
 
-// TODO: verify length checks
-public class Parser {    
+public class Parser {
     public static void parse(char[] source, ContentHandler handler) throws ParseException {
         handler.beginJSON();
         
-        int finalPosition = element(source, handler, 0);
-        while (finalPosition < source.length && source[finalPosition] == '\0') {
-            finalPosition++;
+        int end = element(source, handler, 0);
+        if (end == -1) {
+            handler.endJSON();
+            return;
         }
         
-        if (finalPosition < source.length) {
-            throw new ParseException(finalPosition, "unexpected content");
+        while (end < source.length && source[end] == '\0') {
+            end++;
+        }
+        
+        if (end < source.length) {
+            throw new ParseException(end, "unexpected content");
         }
         
         handler.endJSON();
     }
     
     private static int element(char[] source, ContentHandler handler, int begin) throws ParseException {
-        int end = whitespace(source, begin);
+        int end = whitespaceNoEnd(source, begin);
         
         end = value(source, handler, end);
-        
+        if (end == -1) {
+            return -1;
+        }
+
         return whitespace(source, end);
     }
     
-    private static int value(char[] source, ContentHandler handler, int position) throws ParseException {
-        if (position >= source.length) {
-            return position;
-        }
-
-        switch (source[position]) {
-        case '{': // object
-            return objectValue(source, handler, position);
-        case '[': // array
-            return arrayValue(source, handler, position);
-        case '"': // string
-            return stringValue(source, handler, position, true);
-        case 'n': // null
-            return nullValue(source, handler, position);
-        case 't': // true
-            return trueValue(source, handler, position);
-        case 'f': // false
-            return falseValue(source, handler, position);
-        case '-': // negative number
-            return numberNegativeValue(source, handler, position);
-        case '0': // 0 or fractional/exponential number
-            return numberRest(source, handler, position, position + 1);
+    private static int value(char[] source, ContentHandler handler, int begin) throws ParseException {
+        char ch = source[begin];
+        
+        switch (ch) {
+        case '{':
+            return objectValue(source, handler, begin);
+        case '[':
+            return arrayValue(source, handler, begin);
+        case '"':
+            return stringValue(source, handler, begin, true);
+        case 'n':
+            return nullValue(source, handler, begin);
+        case 't':
+            return trueValue(source, handler, begin);
+        case 'f':
+            return falseValue(source, handler, begin);
+        case '-':
+            return numberNegativeValue(source, handler, begin);
+        case '0':
+            return numberZeroValue(source, handler, begin, begin);
         case '1':
         case '2':
         case '3':
@@ -56,121 +61,143 @@ public class Parser {
         case '7':
         case '8':
         case '9':
-            return numberValue(source, handler, position, position + 1);
+            return numberValue(source, handler, begin, begin);
         default:
-            throw new ParseException(position, "unexpected character: " + source[position]);
+            throw new ParseException(begin, "unexpected character: " + ch);
         }
     }
     
     private static int objectValue(char[] source, ContentHandler handler, int begin) throws ParseException {
-        handler.beginObject();
-        
-        int end = whitespace(source, begin + 1);
-        if (end >= source.length) {
-            throw new ParseException(end, "reached end, expected property or '}'");
+        if (! handler.beginObject()) {
+            return -1;
         }
         
+        int end = whitespaceNoEnd(source, begin + 1);
+        
         if (source[end] == '}') {
-            handler.endObject();
+            if (! handler.endObject()) {
+                return -1;
+            }
             return end + 1;
         }
         
         do {
-            if (source[end] != '\"') {
-                throw new ParseException(end, "expected property name, got: " + source[end]);
+            if (source[end] != '"') {
+                throw new ParseException(end, "expected '\"', but got: " + source[end]);
             }
-            end = stringValue(source, handler, end, false); // notification handled 
-            if (end >= source.length) {
-                throw new ParseException(end, "reached end, expected ':'");
-            }
-            
-            end = whitespace(source, end);
-            if (end >= source.length) {
-                throw new ParseException(end, "reached end, expected ':'");
+            end = stringValue(source, handler, end, false);
+            if (end == -1) {
+                return -1;
             }
             
+            end = whitespaceNoEnd(source, end);
             if (source[end] != ':') {
                 throw new ParseException(end, "expected ':', but got: " + source[end]);
             }
             end++;
-            if (end >= source.length) {
-                throw new ParseException(end, "reached end, expected property value");
-            }
             
             end = element(source, handler, end);
-            handler.endObjectEntry();
+            if (end == -1) {
+                return -1;
+            }
+            
+            if (! handler.endObjectEntry()) {
+                return -1;
+            }
             
             if (end >= source.length) {
-                throw new ParseException(end, "reached end, expected ',' or '}'");
+                throw new ParseException(end, "expected '}' or ',', but got EOF");
             }
-            if (source[end] == ',') {
-                end++;
-                if (end >= source.length) {
-                    throw new ParseException(end, "reached end, expected object entry");
-                }
-                end = whitespace(source, end);
-                if (end >= source.length) {
-                    throw new ParseException(end, "reached end, expected object key");
-                }
+            
+            char ch = source[end];
+            if (ch == ',') {
+                end = whitespaceNoEnd(source, end + 1);
                 continue;
-            } else if (source[end] == '}') {
-                handler.endObject();
+            } else if (ch == '}') {
+                if (! handler.endObject()) {
+                    return -1;
+                }
                 return end + 1;
+            } else {
+                throw new ParseException(end, "expected '}' or ',', but got: " + ch);
             }
         } while(true);
     }
     
     private static int arrayValue(char[] source, ContentHandler handler, int begin) throws ParseException {
-        handler.beginArray();
-        int end = whitespace(source, begin + 1);
-        if (end >= source.length) {
-            throw new ParseException(end, "reached end, expected value or ']'");
+        if (! handler.beginArray()) {
+            return -1;
         }
         
+        int end = whitespaceNoEnd(source, begin + 1);
+        
         if (source[end] == ']') {
-            handler.endArray();
+            if (! handler.endArray()) {
+                return -1;
+            }
             return end + 1;
         }
         
         do {
-            handler.beginArrayEntry();
-            
-            end = element(source, handler, end);
-            
-            handler.endArrayEntry();
-            
-            if (end >= source.length) {
-                throw new ParseException(end, "reached end, expected ',' or ']'");
+            if (! handler.beginArrayEntry()) {
+                return -1;
             }
             
-            if (source[end] == ',') {
-                end++;
-                if (end >= source.length) {
-                    throw new ParseException(end, "reached end, expected array element");
-                }                
+            end = element(source, handler, end);
+            if (end == -1) {
+                return -1;
+            }
+            if (! handler.endArrayEntry()) {
+                return -1;
+            }
+            
+            if (end >= source.length) {
+                throw new ParseException(end, "expected array close, but reached EOF");
+            }
+            
+            char ch = source[end];
+            if (ch == ',') {
+                end ++;
                 continue;
-            } else if (source[end] == ']') {
-                handler.endArray();
+            } else if (ch == ']') {
+                if (! handler.endArray()) {
+                    return -1;
+                }
                 return end + 1;
+            } else {
+                throw new ParseException(end, "expected ']' or ',', but got: " + ch);
             }
         } while (true);
     }
     
     private static int stringValue(char[] source, ContentHandler handler, int begin, boolean value) throws ParseException {
-        int end = begin + 1;
-        if (end >= source.length) {
-            throw new ParseException(end, "reached end, expected '\"'");
-        }
         int escapeCount = 0;
         
-        while (source[end] != '"') {
-            if (source[end] == '\\') {
-                end++;
-                if (end >= source.length) {
-                    throw new ParseException(end, "reached end, expected escape sequence");
+        int contentBegin = begin + 1;
+        int contentEnd = contentBegin;
+        
+        for (; contentEnd < source.length; contentEnd++) {
+            char ch = source[contentEnd];
+            if (ch == '"') {
+                if (value) {
+                    if (! handler.stringValue(source, contentBegin, contentEnd, escapeCount)) {
+                        return -1;
+                    }
+                } else {
+                    if (! handler.beginObjectEntry(source, contentBegin, contentEnd, escapeCount)) {
+                        return -1;
+                    }
+                }
+                return contentEnd + 1;
+            } else if (ch == '\\') {
+                escapeCount++;
+                contentEnd++;
+                if (contentEnd >= source.length) {
+                    throw new ParseException(contentEnd, "expected escaped character, but got EOF");
                 }
                 
-                switch (source[end]) {
+                ch = source[contentEnd];
+                switch (ch) {
                 case '"':
                 case '\\':
                 case '/':
@@ -179,227 +206,267 @@ public class Parser {
                 case 'n':
                 case 'r':
                 case 't':
-                    break;
+                    continue;
                 case 'u':
-                    if (! isHex(source[++end]))
-                        throw new ParseException(end, "unexpected unicode point: " + source[end]);
-                    if (! isHex(source[++end]))
-                        throw new ParseException(end, "unexpected unicode point: " + source[end]);
-                    if (! isHex(source[++end]))
-                        throw new ParseException(end, "unexpected unicode point: " + source[end]);
-                    if (! isHex(source[++end]))
-                        throw new ParseException(end, "unexpected unicode point: " + source[end]);
-                    break;
+                    if (contentEnd + 4 >= source.length) {
+                        throw new ParseException(contentEnd, "expect unicode escape, but got EOF");
+                    }
+                    
+                    if (! isHex(source[++contentEnd])) {
+                        throw new ParseException(contentEnd, "unexpected unicode point: " + source[contentEnd]);
+                    }
+                    if (! isHex(source[++contentEnd])) {
+                        throw new ParseException(contentEnd, "unexpected unicode point: " + source[contentEnd]);
+                    }
+                    if (! isHex(source[++contentEnd])) {
+                        throw new ParseException(contentEnd, "unexpected unicode point: " + source[contentEnd]);
+                    }
+                    if (! isHex(source[++contentEnd])) {
+                        throw new ParseException(contentEnd, "unexpected unicode point: " + source[contentEnd]);
+                    }
+                    continue;
                 default:
-                    throw new ParseException(end, "unexpected escape char: " + source[end]);
+                    throw new ParseException(contentEnd, "expected an escape sequence");
                 }
-                
-                escapeCount++;
-            }
-            end++;
-            if (end >= source.length) {
-                throw new ParseException(end, "reached end, expected '\"'");
+            } else if (ch < ' ') {
+                throw new ParseException(contentEnd, "invalid character in string");
             }
         }
         
-        if (value) {
-            handler.stringValue(source, begin + 1, end, escapeCount);
-        } else {
-            handler.beginObjectEntry(source, begin + 1, end, escapeCount);
-        }
-        return end + 1;
+        throw new ParseException(contentEnd, "expected '\"', but got EOF");
     }
     
     private static int nullValue(char[] source, ContentHandler handler, int begin) throws ParseException {
-        int end = begin + 1;
-        if (end >= source.length || source[end] != 'u')
-            throw new ParseException(end, "expected u");
+        if (begin + 3 >= source.length) {
+            throw new ParseException(begin, "expected null, but found EOF");
+        }
         
-        end++;
-        if (end >= source.length || source[end] != 'l')
-            throw new ParseException(end, "expected l");
+        if (source[begin + 1] != 'u') {
+            throw new ParseException(begin + 1, "expected 'u'");
+        }
+        if (source[begin + 2] != 'l') {
+            throw new ParseException(begin + 2, "expected 'l'");
+        }
+        if (source[begin + 3] != 'l') {
+            throw new ParseException(begin + 3, "expected 'l'");
+        }
         
-        end++;
-        if (end >= source.length || source[end] != 'l')
-            throw new ParseException(end, "expected l");
+        if (! handler.nullValue(source, begin, begin + 4)) {
+            return -1;
+        }
         
-        handler.nullValue(source, begin, end);
-        return end + 1;
+        return begin + 4;
     }
 
     private static int trueValue(char[] source, ContentHandler handler, int begin) throws ParseException {
-        int end = begin + 1;
-        if (end >= source.length || source[end] != 'r')
-            throw new ParseException(end, "expected r");
+        if (begin + 3 >= source.length) {
+            throw new ParseException(begin, "expected true, but found EOF");
+        }
         
-        end++;
-        if (end >= source.length || source[end] != 'u')
-            throw new ParseException(end, "expected u");
+        if (source[begin + 1] != 'r') {
+            throw new ParseException(begin + 1, "expected 'r'");
+        }
+        if (source[begin + 2] != 'u') {
+            throw new ParseException(begin + 2, "expected 'u'");
+        }
+        if (source[begin + 3] != 'e') {
+            throw new ParseException(begin + 3, "expected 'e'");
+        }
         
-        end++;
-        if (end >= source.length || source[end] != 'e')
-            throw new ParseException(end, "expected e");
+        if (! handler.trueValue(source, begin, begin + 4)) {
+            return -1;
+        }
         
-        handler.trueValue(source, begin, end);
-        return end + 1;
+        return begin + 4;
     }
 
     private static int falseValue(char[] source, ContentHandler handler, int begin) throws ParseException {
-        int end = begin + 1;
-        if (end >= source.length || source[end] != 'a')
-            throw new ParseException(end, "expected a");
+        if (begin + 4 >= source.length) {
+            throw new ParseException(begin, "expected null, but found EOF");
+        }
         
-        end++;
-        if (end >= source.length || source[end] != 'l')
-            throw new ParseException(end, "expected l");
+        if (source[begin + 1] != 'a') {
+            throw new ParseException(begin + 1, "expected 'a'");
+        }
+        if (source[begin + 2] != 'l') {
+            throw new ParseException(begin + 2, "expected 'l'");
+        }
+        if (source[begin + 3] != 's') {
+            throw new ParseException(begin + 3, "expected 's'");
+        }
+        if (source[begin + 4] != 'e') {
+            throw new ParseException(begin + 4, "expected 'e'");
+        }
         
-        end++;
-        if (end >= source.length || source[end] != 's')
-            throw new ParseException(end, "expected s");
+        if (! handler.falseValue(source, begin, begin + 5)) {
+            return -1;
+        }
         
-        end++;
-        if (end >= source.length || source[end] != 'e')
-            throw new ParseException(end, "expected e");
-        
-        handler.falseValue(source, begin, end);
-        return end + 1;
+        return begin + 5;
     }
-
+    
     private static int numberNegativeValue(char[] source, ContentHandler handler, int begin) throws ParseException {
         int end = begin + 1;
         if (end >= source.length) {
-            throw new ParseException(begin, "reached end, expected number");
+            throw new ParseException(end, "expected number, but got EOF");
         }
+        char ch = source[end];
         
-        switch (source[end]) {
-        case '0':
-            return numberRest(source, handler, begin, end + 1);
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-            return numberValue(source, handler, begin, end + 1);
-        default:
-            throw new ParseException(begin, "expected digit but got: " + source[begin]);
+        if (ch == '0') {
+            return numberZeroValue(source, handler, begin, end);
+        } else if (ch >= '1' && ch <= '9') {
+            return numberValue(source, handler, begin, end);
+        } else {
+            throw new ParseException(end, "expected [0-9] but got: " + ch);
         }
     }
     
-    private static int numberValue(char[] source, ContentHandler handler, int begin, int position) throws ParseException {
-        if (position >= source.length) {
-            handler.longValue(source, begin, position);
-            return position;
-        }
-        
-        int current = position;
-        while (isDigit(source[current])) {
-            current++;
-
-            if (current >= source.length) {
-                handler.longValue(source, begin, current);
-                return current;
+    private static int numberZeroValue(char[] source, ContentHandler handler, int begin, int position) throws ParseException {
+        int end = position + 1;
+        if (end >= source.length) {
+            if (! handler.longValue(source, begin, end)) {
+                return -1;
             }
-        }
-        
-        return numberRest(source, handler, begin, current);
-    }
-    
-    private static int numberRest(char[] source, ContentHandler handler, int begin, int position) throws ParseException {
-        int current = position;
-        if (current >= source.length) {
-            final int end = current;
-            handler.longValue(source, begin, current);
             return end;
         }
+        char ch = source[end];
         
-        if (isDigit(source[current])) {
-            throw new ParseException(current, "unexpected digit");
+        if (ch == '.') {
+            return numberFraction(source, handler, begin, end);
+        } else if (ch == 'e' || ch == 'E') {
+            return numberExponent(source, handler, begin, end);
+        } else if (ch >= '0' && ch <= '9') {
+            throw new ParseException(end, "did not expect a digit after 0, but got: " + ch);
         }
         
-        boolean fractional = false;
-        if (source[current] == '.') {
-            fractional = true;
-            current++;
-            if (current >= source.length) {
-                final int end = current;
-                handler.doubleValue(source, begin, current);
-                return end;
-            }
-            
-            boolean hasDigits = false;
-            while (isDigit(source[current])) {
-                hasDigits = true;
-                current++;
-                if (current >= source.length) {
-                    final int end = current;
-                    handler.doubleValue(source, begin, current);
-                    return end;
-                }
-            }
-            
-            if (!hasDigits) {
-                throw new ParseException(current, "expected at least one digit");
-            }
-        }
-        
-        if (source[current] == 'e' || source[current] == 'E') {
-            fractional = true;
-            current++;
-            if (current >= source.length) {
-                throw new ParseException(current, "expected exponent");
-            }
-            
-            if (source[current] == '+' || source[current] == '-') {
-                current++;
-                if (current >= source.length) {
-                    throw new ParseException(current, "expected at least one digit");
-                }
-            }
-            
-            boolean hasDigits = false;
-            while (isDigit(source[current])) {
-                current++;
-                hasDigits = true;
-                if (current >= source.length) {
-                    final int end = current;
-                    handler.doubleValue(source, begin, current);
-                    return end;
-                }
-            }
-            if (!hasDigits) {
-                throw new ParseException(current, "expected at least one digit");
-            }
-        }
-        
-        final int end = current;
-        if (fractional) {
-            handler.doubleValue(source, begin, current);
-        } else {
-            handler.longValue(source, begin, current);
+        if (! handler.longValue(source, begin, end)) {
+            return -1;
         }
         return end;
     }
     
-    private static int whitespace(char[] source, int position) {
-        while (position < source.length && isWhitespace(source[position])) {
-            position++;
+    private static int numberValue(char[] source, ContentHandler handler, int begin, int position) throws ParseException {
+        int end = position + 1;
+        for (; end < source.length; end++) {
+            char ch = source[end];
+            if (! (ch >= '0' && ch <= '9')) {
+                break;
+            }
+        }
+
+        if (end >= source.length) {
+            if (! handler.longValue(source, begin, end)) {
+                return -1;
+            }
+            return end;
+        }
+        
+        char ch = source[end];
+        if (ch == '.') {
+            return numberFraction(source, handler, begin, end);
+        } else if (ch == 'e' || ch == 'E') {
+            return numberExponent(source, handler, begin, end);
+        }
+        
+        if (! handler.longValue(source, begin, end)) {
+            return -1;
+        }
+        return end;
+    }
+    
+    private static int numberFraction(char[] source, ContentHandler handler, int begin, int position) throws ParseException {
+        int end = position + 1;
+        
+        boolean hadDigit = false;
+        for (; end < source.length; end++) {
+            char ch = source[end];
+            if (ch >= '0' && ch <= '9') {
+                hadDigit = true;
+            } else {
+                break;
+            }
+        }
+        
+        if (!hadDigit) {
+            if (end >= source.length) {
+                throw new ParseException(end, "expected [0-9], but got EOF");
+            }
+            throw new ParseException(end, "expected [0-9], but got: " + source[end]);
+        }
+        
+        if (end >= source.length) {
+            if (! handler.doubleValue(source, begin, end)) {
+                return -1;
+            }
+            return end;
+        }
+        
+        char ch = source[end];
+        if (ch == 'e' || ch == 'E') {
+            return numberExponent(source, handler, begin, end);
+        }
+        
+        if (! handler.doubleValue(source, begin, end)) {
+            return -1;
+        }
+        return end;
+    }
+    
+    private static int numberExponent(char[] source, ContentHandler handler, int begin, int position) throws ParseException {
+        int end = position + 1;
+        if (end >= source.length) {
+            throw new ParseException(end, "expected exponent, but got EOF");
+        }
+        
+        if (source[end] == '+' || source[end] == '-') {
+            end++;
+        }
+        
+        boolean hadDigit = false;
+        for (; end < source.length; end++) {
+            char ch = source[end];
+            if (ch >= '0' && ch <= '9') {
+                hadDigit = true;
+            } else {
+                break;
+            }
+        }
+
+        if (!hadDigit) {
+            if (end >= source.length) {
+                throw new ParseException(end, "expected [0-9], but got EOF");
+            }
+            throw new ParseException(end, "expected [0-9], but got: " + source[end]);
+        }
+        
+        if (! handler.doubleValue(source, begin, end)) {
+            return -1;
+        }
+        return end;
+    }
+    
+    private static int whitespace(char[] source, int begin) {
+        int position = begin;
+        for (; position < source.length; position++) {
+            char ch = source[position];
+            if (! (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t')) {
+                break;
+            }
         }
         return position;
+    }
+    
+    private static int whitespaceNoEnd(char[] source, int begin) throws ParseException {
+        for (int position = begin; position < source.length; position++) {
+            char ch = source[position];
+            if (! (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t')) {
+                return position;
+            }
+        }
+        throw new ParseException(begin, "unexpected EOF");
     }
 
     private static boolean isHex(char ch) {
         return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
-    }
-    
-    private static boolean isDigit(char ch) {
-        return ch >= '0' && ch <= '9';
-    }
-
-    private static boolean isWhitespace(char ch) {
-        return (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t');
     }
 }
