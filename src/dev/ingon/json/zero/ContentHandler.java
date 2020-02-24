@@ -1,4 +1,4 @@
-package org.json.zero;
+package dev.ingon.json.zero;
 
 import java.nio.CharBuffer;
 

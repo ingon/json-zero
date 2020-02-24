@@ -1,4 +1,4 @@
-package org.json.zero;
+package dev.ingon.json.zero;
 
 public class DefaultContentHandler implements ContentHandler {
     @Override

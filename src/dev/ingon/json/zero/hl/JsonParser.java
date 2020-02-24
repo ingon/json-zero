@@ -1,11 +1,11 @@
-package org.json.zero.hl;
+package dev.ingon.json.zero.hl;
 
 import java.util.Deque;
 import java.util.LinkedList;
 
-import org.json.zero.ContentHandler;
-import org.json.zero.ParseException;
-import org.json.zero.Parser;
+import dev.ingon.json.zero.ContentHandler;
+import dev.ingon.json.zero.ParseException;
+import dev.ingon.json.zero.Parser;
 
 public class JsonParser<V> implements ContentHandler {
     public static <T> T parse(char[] data, JsonBaseHandler<T> handler) throws ParseException {

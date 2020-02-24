@@ -1,4 +1,4 @@
-package org.json.zero;
+package dev.ingon.json.zero;
 
 public class ParseException extends Exception {
     private static final long serialVersionUID = 1L;

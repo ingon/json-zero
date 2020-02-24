@@ -1,6 +1,11 @@
-package org.json.zero;
+package dev.ingon.json.zero;
 
 import java.util.UUID;
+
+import dev.ingon.json.zero.ContentHandler;
+import dev.ingon.json.zero.DefaultContentHandler;
+import dev.ingon.json.zero.ParseException;
+import dev.ingon.json.zero.Parser;
 
 public class ParserBenchmark {
     public static void main(String[] args) {

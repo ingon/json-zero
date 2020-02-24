@@ -1,9 +1,9 @@
-package org.json.zero.hl;
+package dev.ingon.json.zero.hl;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.zero.ParseException;
+import dev.ingon.json.zero.ParseException;
 
 public class JsonArrayHandler<T> extends JsonBaseHandler<List<T>> {
     private final JsonBaseHandler<T> elementHandler;

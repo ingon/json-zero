@@ -1,9 +1,13 @@
-package org.json.zero;
+package dev.ingon.json.zero;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import dev.ingon.json.zero.DefaultContentHandler;
+import dev.ingon.json.zero.ParseException;
+import dev.ingon.json.zero.Parser;
 
 public class ParserPassTest {
     private static int allCount = 0;

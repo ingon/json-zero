@@ -1,9 +1,9 @@
-package org.json.zero.hl;
+package dev.ingon.json.zero.hl;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.zero.ParseException;
+import dev.ingon.json.zero.ParseException;
 
 public class JsonMapHandler<V> extends JsonBaseHandler<Map<String, V>> {
     private final JsonBaseHandler<V> elementHandler;

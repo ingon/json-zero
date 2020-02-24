@@ -1,7 +1,10 @@
-package org.json.zero;
+package dev.ingon.json.zero;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import dev.ingon.json.zero.ContentHandler;
+import dev.ingon.json.zero.ParseException;
 
 public class CollectingContentHandler implements ContentHandler {
     final List<String> elements = new ArrayList<String>();

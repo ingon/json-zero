@@ -1,4 +1,4 @@
-package org.json.zero;
+package dev.ingon.json.zero;
 
 public class Parser {
     public static void parse(char[] source, ContentHandler handler) throws ParseException {

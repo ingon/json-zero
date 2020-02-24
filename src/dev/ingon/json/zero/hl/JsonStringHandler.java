@@ -1,6 +1,6 @@
-package org.json.zero.hl;
+package dev.ingon.json.zero.hl;
 
-import org.json.zero.ParseException;
+import dev.ingon.json.zero.ParseException;
 
 public class JsonStringHandler extends JsonBaseHandler<String> {
     @Override

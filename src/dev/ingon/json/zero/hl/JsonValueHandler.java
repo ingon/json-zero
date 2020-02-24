@@ -1,8 +1,26 @@
-package org.json.zero.hl;
+package dev.ingon.json.zero.hl;
 
-import org.json.zero.ParseException;
+import dev.ingon.json.zero.ParseException;
 
-public class JsonPrimitiveValueHandler extends JsonBaseHandler<Object> {
+public class JsonValueHandler extends JsonBaseHandler<Object> {
+    private JsonBaseHandler<?> delegate;
+    
+    @Override
+    public boolean beginObject() throws ParseException {
+        delegate = new JsonMapHandler<Object>(new JsonValueHandler());
+        delegate.valueConsumer = (o) -> complete(o);
+        parser.enque(".", delegate);
+        return delegate.beginObject();
+    }
+    
+    @Override
+    public boolean beginArray() throws ParseException {
+        delegate = new JsonArrayHandler<Object>(new JsonValueHandler());
+        delegate.valueConsumer = (o) -> complete(o);
+        parser.enque("[]", delegate);
+        return delegate.beginArray();
+    }
+    
     @Override
     public boolean stringValue(char[] source, int begin, int end, int escapeCount) throws ParseException {
         complete(readString(source, begin, end, escapeCount));

@@ -1,4 +1,4 @@
-package org.json.zero.hl;
+package dev.ingon.json.zero.hl;
 
 import java.util.HashMap;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-import org.json.zero.ParseException;
+import dev.ingon.json.zero.ParseException;
 
 public class JsonTypedHandler<T> extends JsonBaseHandler<T> {
     private final Supplier<T> factory;

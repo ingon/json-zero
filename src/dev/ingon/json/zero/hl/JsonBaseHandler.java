@@ -1,9 +1,9 @@
-package org.json.zero.hl;
+package dev.ingon.json.zero.hl;
 
 import java.util.function.Consumer;
 
-import org.json.zero.ContentHandler;
-import org.json.zero.ParseException;
+import dev.ingon.json.zero.ContentHandler;
+import dev.ingon.json.zero.ParseException;
 
 public class JsonBaseHandler<T> implements ContentHandler {
     JsonParser<?> parser;
