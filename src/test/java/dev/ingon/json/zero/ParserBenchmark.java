@@ -29,7 +29,8 @@ public class ParserBenchmark {
     
     @Test
     public void testHelloHigh() throws Exception {
-        var result = JsonParser.parse("{\"hello\": \"world\"}".toCharArray(), new JsonMapHandler<String>(new JsonStringHandler()));
+        var result = JsonParser.parse("{\"hello\": \"world\"}".toCharArray(), 
+            new JsonMapHandler<String>(new JsonStringHandler()));
         for (var e : result.entrySet()) {
             System.out.format("%s %s", e.getKey(), e.getValue());
         }
