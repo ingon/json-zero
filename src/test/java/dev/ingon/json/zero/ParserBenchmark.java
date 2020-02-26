@@ -2,12 +2,6 @@ package dev.ingon.json.zero;
 
 import java.util.UUID;
 
-import org.junit.Test;
-
-import dev.ingon.json.zero.hl.JsonMapHandler;
-import dev.ingon.json.zero.hl.JsonParser;
-import dev.ingon.json.zero.hl.JsonStringHandler;
-
 public class ParserBenchmark {
     
     public static void main(String[] args) {
@@ -180,7 +174,7 @@ public class ParserBenchmark {
 //          s = e.run();
         }
         long t2 = System.currentTimeMillis();
-//        System.out.println(message + " :: " + ((t2 - t1) / (LOOP + 0D)) + " ms\t\t" + s);
-        System.out.println(message + ", " + ((t2 - t1) / (LOOP + 0D)));
+        System.out.println(message + " :: " + ((t2 - t1) / (LOOP + 0D)) + " ms\t\t" + s);
+//        System.out.println(message + ", " + ((t2 - t1) / (LOOP + 0D)));
     }
 }
