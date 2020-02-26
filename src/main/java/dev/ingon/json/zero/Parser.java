@@ -22,7 +22,10 @@ public class Parser {
     }
     
     private static int element(char[] source, ContentHandler handler, int begin) throws ParseException {
-        int end = whitespaceNoEnd(source, begin);
+        int end = whitespace(source, begin);
+        if (end >= source.length) {
+            throw new ParseException(end, "expected value, but got EOF");
+        }
         
         end = value(source, handler, end);
         if (end == -1) {
@@ -63,7 +66,7 @@ public class Parser {
         case '9':
             return numberValue(source, handler, begin, begin);
         default:
-            throw new ParseException(begin, "unexpected character: " + ch);
+            throw new ParseException(begin, "expected value, but got: " + ch);
         }
     }
     
@@ -72,7 +75,10 @@ public class Parser {
             return -1;
         }
         
-        int end = whitespaceNoEnd(source, begin + 1);
+        int end = whitespace(source, begin + 1);
+        if (end >= source.length) {
+            throw new ParseException(end, "expected object key or '}', but got EOF");
+        }
         
         if (source[end] == '}') {
             if (! handler.endObject()) {
@@ -90,7 +96,10 @@ public class Parser {
                 return -1;
             }
             
-            end = whitespaceNoEnd(source, end);
+            end = whitespace(source, end);
+            if (end >= source.length) {
+                throw new ParseException(end, "expected ':', but got EOF");
+            }
             if (source[end] != ':') {
                 throw new ParseException(end, "expected ':', but got: " + source[end]);
             }
@@ -111,7 +120,10 @@ public class Parser {
             
             char ch = source[end];
             if (ch == ',') {
-                end = whitespaceNoEnd(source, end + 1);
+                end = whitespace(source, end + 1);
+                if (end >= source.length) {
+                    throw new ParseException(end, "expected object entry, but got EOF");
+                }
                 continue;
             } else if (ch == '}') {
                 if (! handler.endObject()) {
@@ -129,7 +141,10 @@ public class Parser {
             return -1;
         }
         
-        int end = whitespaceNoEnd(source, begin + 1);
+        int end = whitespace(source, begin + 1);
+        if (end >= source.length) {
+            throw new ParseException(end, "expected value or ']', but got EOF");
+        }
         
         if (source[end] == ']') {
             if (! handler.endArray()) {
@@ -209,7 +224,7 @@ public class Parser {
                     continue;
                 case 'u':
                     if (contentEnd + 4 >= source.length) {
-                        throw new ParseException(contentEnd, "expect unicode escape, but got EOF");
+                        throw new ParseException(source.length, "expect unicode escape, but got EOF");
                     }
                     
                     if (! isHex(source[++contentEnd])) {
@@ -226,7 +241,7 @@ public class Parser {
                     }
                     continue;
                 default:
-                    throw new ParseException(contentEnd, "expected an escape sequence");
+                    throw new ParseException(contentEnd, "expected escape sequence char, but got: " + ch);
                 }
             } else if (ch < ' ') {
                 throw new ParseException(contentEnd, "invalid character in string");
@@ -238,7 +253,7 @@ public class Parser {
     
     private static int nullValue(char[] source, ContentHandler handler, int begin) throws ParseException {
         if (begin + 3 >= source.length) {
-            throw new ParseException(begin, "expected null, but found EOF");
+            throw new ParseException(source.length, "expected null, but found EOF");
         }
         
         if (source[begin + 1] != 'u') {
@@ -260,7 +275,7 @@ public class Parser {
 
     private static int trueValue(char[] source, ContentHandler handler, int begin) throws ParseException {
         if (begin + 3 >= source.length) {
-            throw new ParseException(begin, "expected true, but found EOF");
+            throw new ParseException(source.length, "expected true, but found EOF");
         }
         
         if (source[begin + 1] != 'r') {
@@ -282,7 +297,7 @@ public class Parser {
 
     private static int falseValue(char[] source, ContentHandler handler, int begin) throws ParseException {
         if (begin + 4 >= source.length) {
-            throw new ParseException(begin, "expected null, but found EOF");
+            throw new ParseException(source.length, "expected false, but found EOF");
         }
         
         if (source[begin + 1] != 'a') {
@@ -317,7 +332,7 @@ public class Parser {
         } else if (ch >= '1' && ch <= '9') {
             return numberValue(source, handler, begin, end);
         } else {
-            throw new ParseException(end, "expected [0-9] but got: " + ch);
+            throw new ParseException(end, "expected number, but got: " + ch);
         }
     }
     
@@ -389,9 +404,9 @@ public class Parser {
         
         if (!hadDigit) {
             if (end >= source.length) {
-                throw new ParseException(end, "expected [0-9], but got EOF");
+                throw new ParseException(end, "expected fraction digits, but got EOF");
             }
-            throw new ParseException(end, "expected [0-9], but got: " + source[end]);
+            throw new ParseException(end, "expected fraction digits, but got: " + source[end]);
         }
         
         if (end >= source.length) {
@@ -415,7 +430,7 @@ public class Parser {
     private static int numberExponent(char[] source, ContentHandler handler, int begin, int position) throws ParseException {
         int end = position + 1;
         if (end >= source.length) {
-            throw new ParseException(end, "expected exponent, but got EOF");
+            throw new ParseException(end, "expected exponent digits, but got EOF");
         }
         
         if (source[end] == '+' || source[end] == '-') {
@@ -434,9 +449,9 @@ public class Parser {
 
         if (!hadDigit) {
             if (end >= source.length) {
-                throw new ParseException(end, "expected [0-9], but got EOF");
+                throw new ParseException(end, "expected exponent digits, but got EOF");
             }
-            throw new ParseException(end, "expected [0-9], but got: " + source[end]);
+            throw new ParseException(end, "expected exponent digits, but got: " + source[end]);
         }
         
         if (! handler.doubleValue(source, begin, end)) {
@@ -454,16 +469,6 @@ public class Parser {
             }
         }
         return position;
-    }
-    
-    private static int whitespaceNoEnd(char[] source, int begin) throws ParseException {
-        for (int position = begin; position < source.length; position++) {
-            char ch = source[position];
-            if (! (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t')) {
-                return position;
-            }
-        }
-        throw new ParseException(begin, "unexpected EOF");
     }
 
     private static boolean isHex(char ch) {
