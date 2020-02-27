@@ -24,52 +24,57 @@ public interface ContentHandler {
     boolean endArray() throws ParseException;
 
     default String readString(char[] source, int begin, int end, int escapeCount) {
-        if (escapeCount == 0) {
-            return String.valueOf(source, begin, end - begin);
-        } else {
-            StringBuilder sb = new StringBuilder(end - begin);
-            for (int i = begin; i < end; i++) {
-                char ch = source[i];
-                switch (ch) {
-                case '\\': 
-                    ch = source[++i];
-                    switch (ch) {
-                    case '"':
-                    case '\\':
-                    case '/':
-                        sb.append(ch);
-                        break;
-                    case 'b':
-                        sb.append('\b');
-                        break;
-                    case 'f':
-                        sb.append('\f');
-                        break;
-                    case 'n':
-                        sb.append('\n');
-                        break;
-                    case 'r':
-                        sb.append('\r');
-                        break;
-                    case 't':
-                        sb.append('\t');
-                        break;
-                    case 'u':
-                        int codePoint = Integer.parseInt(CharBuffer.wrap(source, i + 1, 4), 0, 4, 16);
-                        sb.append(Character.toChars(codePoint));
-                        i += 4;
-                    }
-                    break;
-                case '"':
-                    throw new RuntimeException("wat");
-                default:
-                    sb.append(ch);
-                }
-            }
-            return sb.toString();
-        }
+        return readChars(source, begin, end, escapeCount).toString();
     }
-    
+
+    default CharBuffer readChars(char[] source, int begin, int end, int escapeCount) {
+        if (escapeCount == 0) {
+            return CharBuffer.wrap(source, begin, end - begin);
+        } 
+        
+        CharBuffer cb = CharBuffer.allocate(end - begin);
+        for (int i = begin; i < end; i++) {
+            char ch = source[i];
+            switch (ch) {
+            case '\\': 
+                ch = source[++i];
+                switch (ch) {
+                case '"':
+                case '\\':
+                case '/':
+                    cb.put(ch);
+                    break;
+                case 'b':
+                    cb.put('\b');
+                    break;
+                case 'f':
+                    cb.put('\f');
+                    break;
+                case 'n':
+                    cb.put('\n');
+                    break;
+                case 'r':
+                    cb.put('\r');
+                    break;
+                case 't':
+                    cb.put('\t');
+                    break;
+                case 'u':
+                    int codePoint = Integer.parseInt(CharBuffer.wrap(source, i + 1, 4), 0, 4, 16);
+                    cb.put(Character.toChars(codePoint));
+                    i += 4;
+                }
+                break;
+            case '"':
+                throw new RuntimeException("wat");
+            default:
+                cb.put(ch);
+            }
+        }
+        
+        return cb.flip();
+    }
+
     default long readLong(char[] source, int begin, int end) {
         return Long.parseLong(new String(source, begin, end - begin));
     }

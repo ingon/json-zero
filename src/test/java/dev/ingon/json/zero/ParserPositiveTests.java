@@ -37,7 +37,7 @@ public class ParserPositiveTests {
         assertPass("\"abc\"", ">>> ", "S:abc", " <<<");
         
         // harder
-        assertPass("\"\\t\\b\"", ">>> ", "S:\t\b", " <<<");
+        assertPass("\"\\\" \\\\ \\/ \\b \\f \\n \\r \\t\"", ">>> ", "S:\" \\ / \b \f \n \r \t", " <<<");
         assertPass("\"\\u73e1\\u52ab\"", ">>> ", "S:\u73e1\u52ab", " <<<");
     }
     
