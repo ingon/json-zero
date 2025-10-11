@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id "com.vanniktech.maven.publish" version "0.34.0"
 }
 
 version = '1.0.2'
@@ -11,9 +12,42 @@ java {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
     testImplementation 'junit:junit:4.12'
+}
+
+mavenPublishing {
+  coordinates("dev.ingon", "json-zero", "1.0.2")
+
+  pom {
+    name = "json-zero"
+    description = "Parse json with zero allocations"
+    inceptionYear = "2020"
+    url = "https://github.com/ingon/json-zero/"
+    licenses {
+      license {
+        name = "MIT License"
+        url = "http://www.opensource.org/licenses/mit-license.php"
+      }
+    }
+    developers {
+      developer {
+        id = "ingon"
+        name = "Nikolay Petrov"
+        url = "https://github.com/ingon/"
+      }
+    }
+    scm {
+      url = "https://github.com/ingon/json-zero/"
+      connection = "scm:git:git://github.com/ingon/json-zero.git"
+      developerConnection = "scm:git:ssh://git@github.com/ingon/json-zero.git"
+    }
+  }
+
+  publishToMavenCentral()
+
+  signAllPublications()
 }
